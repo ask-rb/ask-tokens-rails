@@ -2,8 +2,8 @@ require_relative "test_helper"
 
 class HasTokenWalletTest < Minitest::Test
   def setup
-    Ask::TokenUsage.reset!
-    Ask::TokenUsage.configure { |c| c.store = Ask::TokenUsage::Rails::ActiveRecordStore.new }
+    Ask::Tokens.reset!
+    Ask::Tokens.configure { |c| c.store = Ask::Tokens::Rails::ActiveRecordStore.new }
     @user = TestUser.create!(name: "Alice")
   end
 
@@ -20,7 +20,7 @@ class HasTokenWalletTest < Minitest::Test
   end
 
   def test_spend_tokens_on
-    Ask::TokenUsage.activity(:job, cost: 50)
+    Ask::Tokens.activity(:job, cost: 50)
     @user.grant_tokens!(1000, reason: :start)
     @user.spend_tokens_on!(:job) { "done" }
     assert_equal 950, @user.token_balance
@@ -28,7 +28,7 @@ class HasTokenWalletTest < Minitest::Test
 
   def test_token_wallet_persisted
     @user.grant_tokens!(100, reason: :init)
-    wallet = Ask::TokenUsage::TokenWallet.find_by(owner: @user)
+    wallet = Ask::Tokens::TokenWallet.find_by(owner: @user)
     assert wallet
     assert_equal 100, wallet.balance
   end
@@ -41,7 +41,7 @@ class HasTokenWalletTest < Minitest::Test
 
   def test_ask_token_wallet_returns_poro
     w = @user.ask_token_wallet
-    assert_kind_of Ask::TokenUsage::Wallet, w
+    assert_kind_of Ask::Tokens::Wallet, w
   end
 
   def test_has_tokens_for

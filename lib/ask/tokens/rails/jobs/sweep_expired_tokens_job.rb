@@ -3,14 +3,14 @@
 require "active_job"
 
 module Ask
-  module TokenUsage
+  module Tokens
     module Rails
       # Expire grant entries whose +expires_at+ has passed. Scheduled as a
       # recurring job (Solid Queue cron, Sidekiq Cron, etc.):
       #
       #   # config/recurring.yml
-      #   ask_token_usage_sweep:
-      #     class: Ask::TokenUsage::Rails::SweepExpiredTokensJob
+      #   ask_tokens_sweep:
+      #     class: Ask::Tokens::Rails::SweepExpiredTokensJob
       #     schedule: "every 1 hour"
       #
       # For each expired grant, the actual amount removed is capped to the
@@ -22,7 +22,7 @@ module Ask
         queue_as :default
 
         def perform(now: Time.current)
-          Ask::TokenUsage::TokenTransaction
+          Ask::Tokens::TokenTransaction
             .grants
             .where("expires_at IS NOT NULL AND expires_at <= ?", now)
             .where.not(entry_type: "expiry")
@@ -45,7 +45,7 @@ module Ask
             actual = [remaining, wallet.balance].min
             return if actual <= 0
 
-            Ask::TokenUsage::TokenTransaction.create!(
+            Ask::Tokens::TokenTransaction.create!(
               token_wallet_id: wallet.id,
               entry_type: "expiry",
               amount: -actual,
@@ -64,7 +64,7 @@ module Ask
         end
 
         def already_expired_amount(grant)
-          Ask::TokenUsage::TokenTransaction
+          Ask::Tokens::TokenTransaction
             .where(token_wallet_id: grant.token_wallet_id, entry_type: "expiry")
             .where("metadata->>'source_transaction_id' = ?", grant.id.to_s)
             .sum(:amount)

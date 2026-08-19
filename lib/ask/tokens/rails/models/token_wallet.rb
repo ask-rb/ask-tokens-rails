@@ -3,12 +3,12 @@
 require "active_record"
 
 module Ask
-  module TokenUsage
+  module Tokens
     # Polymorphic wallet record. One per owner. Holds the cached balance.
     class TokenWallet < ::ActiveRecord::Base
       self.table_name = "token_wallets"
 
-      has_many :token_transactions, class_name: "Ask::TokenUsage::TokenTransaction",
+      has_many :token_transactions, class_name: "Ask::Tokens::TokenTransaction",
                                    foreign_key: :token_wallet_id,
                                    dependent: :destroy,
                                    inverse_of: :token_wallet

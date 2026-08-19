@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-gem "ask-token-usage", path: "../ask-token-usage"
+gem "ask-tokens", path: "../ask-tokens"
 gemspec
 
 group :test do

@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-# ask-token-usage configuration.
+# ask-tokens configuration.
 # The railtie auto-wires the ActiveRecord store. Override settings here.
 
-Ask::TokenUsage.configure do |config|
+Ask::Tokens.configure do |config|
   # What 1M billing tokens cost (the rate your users pay).
   # config.price_per_1m = Money.from_amount(100, "USD")  # $100 / 1M
 

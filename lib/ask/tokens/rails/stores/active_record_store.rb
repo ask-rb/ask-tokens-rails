@@ -1,15 +1,15 @@
 # frozen_string_literal: true
 
-require "ask/token_usage/stores/store"
+require "ask/tokens/stores/store"
 
 module Ask
-  module TokenUsage
+  module Tokens
     module Rails
       # ActiveRecord-backed wallet store. Each mutation (grant/deduct) does
       # its own read-write under a single DB call. The wallet row is created
       # lazily on first access. No outer transaction wrapping — each AR
       # create/update handles its own atomicity.
-      class ActiveRecordStore < Ask::TokenUsage::Stores::Store
+      class ActiveRecordStore < Ask::Tokens::Stores::Store
         def balance(owner)
           resolve_wallet(owner)&.balance || 0
         end
@@ -33,12 +33,13 @@ module Ask
 
         def append(owner, entry)
           row = find_or_create_wallet!(owner)
-          txn = Ask::TokenUsage::TokenTransaction.create!(
+          meta = entry.metadata || {}
+          txn = Ask::Tokens::TokenTransaction.create!(
             token_wallet_id: row.id,
             entry_type: entry.kind.to_s,
             amount: entry.amount,
             reason: entry.reason,
-            metadata: entry.metadata || {},
+            metadata: meta,
             expires_at: entry.expires_at,
             balance: entry.balance,
             created_at: entry.created_at
@@ -55,17 +56,17 @@ module Ask
 
         def find_or_create_wallet!(owner)
           owner_type, owner_id = resolve_owner(owner)
-          Ask::TokenUsage::TokenWallet.find_by(owner_type: owner_type, owner_id: owner_id) ||
+          Ask::Tokens::TokenWallet.find_by(owner_type: owner_type, owner_id: owner_id) ||
             begin
-              Ask::TokenUsage::TokenWallet.create!(owner_type: owner_type, owner_id: owner_id, balance: 0)
+              Ask::Tokens::TokenWallet.create!(owner_type: owner_type, owner_id: owner_id, balance: 0)
             rescue ActiveRecord::RecordNotUnique
-              Ask::TokenUsage::TokenWallet.find_by!(owner_type: owner_type, owner_id: owner_id)
+              Ask::Tokens::TokenWallet.find_by!(owner_type: owner_type, owner_id: owner_id)
             end
         end
 
         def resolve_wallet(owner)
           owner_type, owner_id = resolve_owner(owner)
-          Ask::TokenUsage::TokenWallet.find_by(owner_type: owner_type, owner_id: owner_id)
+          Ask::Tokens::TokenWallet.find_by(owner_type: owner_type, owner_id: owner_id)
         end
 
         def resolve_owner(owner)
@@ -77,7 +78,7 @@ module Ask
         end
 
         def to_entry(txn)
-          Ask::TokenUsage::LedgerEntry.new(
+          Ask::Tokens::LedgerEntry.new(
             id: txn.id,
             kind: txn.entry_type.to_sym,
             amount: txn.amount,

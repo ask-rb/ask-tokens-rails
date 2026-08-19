@@ -3,13 +3,13 @@
 require "rails/generators"
 require "rails/generators/migration"
 
-module AskTokenUsage
+module AskTokens
   module Generators
     class InstallGenerator < Rails::Generators::Base
       include Rails::Generators::Migration
       source_root File.expand_path("templates", __dir__)
 
-      desc "Creates the ask-token-usage migration and initializer"
+      desc "Creates the ask-tokens migration and initializer"
 
       def self.next_migration_number(_dir)
         Time.now.utc.strftime("%Y%m%d%H%M%S")
@@ -20,7 +20,7 @@ module AskTokenUsage
       end
 
       def create_initializer
-        template "initializer.rb", "config/initializers/ask_token_usage.rb"
+        template "initializer.rb", "config/initializers/ask_tokens.rb"
       end
 
       def show_readme

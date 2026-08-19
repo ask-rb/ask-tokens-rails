@@ -3,10 +3,10 @@
 require "active_support/concern"
 
 module Ask
-  module TokenUsage
+  module Tokens
     module Rails
       # Include this concern in any ActiveRecord model to give it a token
-      # wallet backed by ask-token-usage-rails.
+      # wallet backed by ask-tokens-rails.
       #
       #   class User < ApplicationRecord
       #     has_token_wallet
@@ -14,7 +14,7 @@ module Ask
       #
       # Adds:
       #   user.token_balance        # Integer
-      #   user.token_wallet         # Ask::TokenUsage::TokenWallet (lazy-created)
+      #   user.token_wallet         # Ask::Tokens::TokenWallet (lazy-created)
       #   user.token_transactions   # AR scope for the ledger
       #   user.grant_tokens!(...)   # convenience
       #   user.spend_tokens!(...)   # convenience
@@ -25,7 +25,7 @@ module Ask
 
         included do
           has_one :token_wallet, as: :owner,
-                                 class_name: "Ask::TokenUsage::TokenWallet",
+                                 class_name: "Ask::Tokens::TokenWallet",
                                  dependent: :destroy,
                                  inverse_of: :owner
 
@@ -34,17 +34,17 @@ module Ask
 
         def ensure_token_wallet!
           # Force wallet row creation by probing balance through the AR store
-          Ask::TokenUsage.wallet_for(self).balance
+          Ask::Tokens.wallet_for(self).balance
         end
 
         def token_balance
-          Ask::TokenUsage.wallet_for(self).balance
+          Ask::Tokens.wallet_for(self).balance
         end
 
-        # Build an Ask::TokenUsage::Wallet PORO backed by this model's
+        # Build an Ask::Tokens::Wallet PORO backed by this model's
         # AR wallet — use for one-off operations outside the concern API.
         def ask_token_wallet
-          Ask::TokenUsage.wallet_for(self)
+          Ask::Tokens.wallet_for(self)
         end
 
         # Grant +amount+ tokens.
@@ -61,7 +61,7 @@ module Ask
         # insufficient balance.
         def try_deduct_tokens!(amount, reason:, metadata: {})
           deduct_tokens!(amount, reason: reason, metadata: metadata)
-        rescue Ask::TokenUsage::InsufficientTokens
+        rescue Ask::Tokens::InsufficientTokens
           false
         end
 
@@ -80,7 +80,7 @@ module Ask
           ask_token_wallet.has?(amount)
         end
 
-        def token_usage_since(time)
+        def tokens_since(time)
           ask_token_wallet.used_since(time)
         end
       end

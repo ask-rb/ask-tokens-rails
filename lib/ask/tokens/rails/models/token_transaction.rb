@@ -3,13 +3,13 @@
 require "active_record"
 
 module Ask
-  module TokenUsage
+  module Tokens
     # Append-only ledger row. Every grant, debit, adjustment, or expiry is
     # written here as an immutable record. Never updated or deleted.
     class TokenTransaction < ::ActiveRecord::Base
       self.table_name = "token_transactions"
 
-      belongs_to :token_wallet, class_name: "Ask::TokenUsage::TokenWallet",
+      belongs_to :token_wallet, class_name: "Ask::Tokens::TokenWallet",
                                 foreign_key: :token_wallet_id,
                                 inverse_of: :token_transactions
 

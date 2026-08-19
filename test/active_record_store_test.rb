@@ -2,9 +2,9 @@ require_relative "test_helper"
 
 class ActiveRecordStoreTest < Minitest::Test
   def setup
-    Ask::TokenUsage.reset!
-    @store = Ask::TokenUsage::Rails::ActiveRecordStore.new
-    Ask::TokenUsage.configure do |c|
+    Ask::Tokens.reset!
+    @store = Ask::Tokens::Rails::ActiveRecordStore.new
+    Ask::Tokens.configure do |c|
       c.store = @store
       c.time = -> { Time.now }
     end
@@ -13,7 +13,7 @@ class ActiveRecordStoreTest < Minitest::Test
   end
 
   def wallet(owner = @alice)
-    Ask::TokenUsage.wallet_for(owner)
+    Ask::Tokens.wallet_for(owner)
   end
 
   def test_balance_starts_at_zero
@@ -23,7 +23,7 @@ class ActiveRecordStoreTest < Minitest::Test
   def test_grant_and_read_balance
     wallet.grant!(1000, reason: :signup)
     assert_equal 1000, wallet.balance
-    assert_equal 1000, Ask::TokenUsage::TokenWallet.last.balance
+    assert_equal 1000, Ask::Tokens::TokenWallet.last.balance
   end
 
   def test_deduct_and_read_balance
@@ -57,14 +57,14 @@ class ActiveRecordStoreTest < Minitest::Test
 
   def test_token_wallet_row_created
     wallet.grant!(100, reason: :init)
-    row = Ask::TokenUsage::TokenWallet.last
+    row = Ask::Tokens::TokenWallet.last
     assert_equal 100, row.balance
     assert_equal "TestUser", row.owner_type
   end
 
   def test_token_transaction_row_created
     wallet.grant!(100, reason: :init)
-    txn = Ask::TokenUsage::TokenTransaction.last
+    txn = Ask::Tokens::TokenTransaction.last
     assert_equal "grant", txn.entry_type
     assert_equal 100, txn.amount
     assert_equal "init", txn.reason
@@ -73,13 +73,13 @@ class ActiveRecordStoreTest < Minitest::Test
 
   def test_metadata_stored
     wallet.grant!(100, reason: :promo, metadata: { campaign: "beta" })
-    txn = Ask::TokenUsage::TokenTransaction.last
+    txn = Ask::Tokens::TokenTransaction.last
     assert_equal({ "campaign" => "beta" }, txn.metadata)
   end
 
   def test_insufficient_tokens_raises
     wallet.grant!(10, reason: :tiny)
-    assert_raises(Ask::TokenUsage::InsufficientTokens) do
+    assert_raises(Ask::Tokens::InsufficientTokens) do
       wallet.deduct!(50, reason: :big)
     end
     assert_equal 10, wallet.balance
@@ -89,14 +89,14 @@ class ActiveRecordStoreTest < Minitest::Test
     wallet.grant!(200, reason: :start)
     wallet.adjust_balance_to!(500, reason: :monthly_reset)
     assert_equal 500, wallet.balance
-    row = Ask::TokenUsage::TokenWallet.find_by(owner: @alice)
+    row = Ask::Tokens::TokenWallet.find_by(owner: @alice)
     assert_equal 500, row.balance
   end
 
   def test_adjust_balance_to_records_transaction
     wallet.grant!(200, reason: :start)
     wallet.adjust_balance_to!(50, reason: :downgrade)
-    txn = Ask::TokenUsage::TokenTransaction.where(token_wallet: Ask::TokenUsage::TokenWallet.find_by(owner: @alice)).last
+    txn = Ask::Tokens::TokenTransaction.where(token_wallet: Ask::Tokens::TokenWallet.find_by(owner: @alice)).last
     assert_equal "adjustment", txn.entry_type
     assert_equal(-150, txn.amount)
   end

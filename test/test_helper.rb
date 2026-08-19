@@ -10,11 +10,11 @@ end
 $LOAD_PATH.unshift File.expand_path("../../lib", __dir__)
 
 require "active_record"
-require "ask-token-usage"
-require "ask/token_usage/rails/models/token_wallet"
-require "ask/token_usage/rails/models/token_transaction"
-require "ask/token_usage/rails/stores/active_record_store"
-require "ask/token_usage/rails/concerns/has_token_wallet"
+require "ask-tokens"
+require "ask/tokens/rails/models/token_wallet"
+require "ask/tokens/rails/models/token_transaction"
+require "ask/tokens/rails/stores/active_record_store"
+require "ask/tokens/rails/concerns/has_token_wallet"
 
 ActiveRecord::Base.establish_connection(adapter: "sqlite3", database: ":memory:")
 ActiveRecord::Base.logger = nil unless ENV["LOG"]
@@ -49,7 +49,7 @@ end
 
 # Stub model to test the concern without a full Rails app
 class TestUser < ActiveRecord::Base
-  include Ask::TokenUsage::Rails::HasTokenWallet
+  include Ask::Tokens::Rails::HasTokenWallet
 end
 
 require "minitest/autorun"
