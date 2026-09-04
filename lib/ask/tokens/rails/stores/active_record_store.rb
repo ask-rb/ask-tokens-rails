@@ -42,7 +42,8 @@ module Ask
             metadata: meta,
             expires_at: entry.expires_at,
             balance: entry.balance,
-            created_at: entry.created_at
+            created_at: entry.created_at,
+            **extract_columns_from_metadata(meta)
           )
           entry.with(id: txn.id)
         end
@@ -88,6 +89,18 @@ module Ask
             balance: txn.balance,
             created_at: txn.created_at
           )
+        end
+
+        # Extract well-known metadata keys into their matching model columns.
+        # Only writes keys that exist in metadata, so grants/debits without
+        # LLM context are unaffected. Symbol and string keys are both handled.
+        COLUMN_KEYS = %i[model_id provider input_tokens output_tokens cached_tokens llm_cost_usd multiplier].freeze
+
+        def extract_columns_from_metadata(meta)
+          COLUMN_KEYS.each_with_object({}) do |key, hash|
+            value = meta[key] || meta[key.to_s]
+            hash[key] = value if value
+          end
         end
       end
     end
