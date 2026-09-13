@@ -1,13 +1,16 @@
 # frozen_string_literal: true
 
 require "active_record"
+require_relative "../configuration"
 
 module Ask
   module Tokens
     # Append-only ledger row. Every grant, debit, adjustment, or expiry is
     # written here as an immutable record. Never updated or deleted.
     class TokenTransaction < ::ActiveRecord::Base
-      self.table_name = "token_transactions"
+      def self.table_name
+        Ask::Tokens::Rails.config.transactions_table
+      end
 
       belongs_to :token_wallet, class_name: "Ask::Tokens::TokenWallet",
                                 foreign_key: :token_wallet_id,

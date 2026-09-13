@@ -21,16 +21,16 @@ ActiveRecord::Base.logger = nil unless ENV["LOG"]
 
 ActiveRecord::Schema.define do
   suppress_messages do
-    create_table :token_wallets do |t|
+    create_table :ask_tokens_wallets do |t|
       t.string :owner_type, null: false
       t.bigint :owner_id, null: false
       t.bigint :balance, null: false, default: 0
       t.timestamps
     end
-    add_index :token_wallets, %i[owner_type owner_id], unique: true
+    add_index :ask_tokens_wallets, %i[owner_type owner_id], unique: true
 
-    create_table :token_transactions do |t|
-      t.references :token_wallet, null: false, foreign_key: true
+    create_table :ask_tokens_transactions do |t|
+      t.references :token_wallet, null: false, foreign_key: {to_table: :ask_tokens_wallets}
       t.string :entry_type, null: false
       t.bigint :amount, null: false
       t.string :reason, null: false
@@ -39,7 +39,7 @@ ActiveRecord::Schema.define do
       t.datetime :expires_at
       t.datetime :created_at, null: false
     end
-    add_index :token_transactions, %i[token_wallet_id created_at]
+    add_index :ask_tokens_transactions, %i[token_wallet_id created_at]
 
     create_table :test_users, force: true do |t|
       t.string :name

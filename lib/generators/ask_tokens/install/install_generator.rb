@@ -1,5 +1,6 @@
 # frozen_string_literal: true
 
+require "ask-tokens-rails"
 require "rails/generators"
 require "rails/generators/migration"
 
