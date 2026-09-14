@@ -53,4 +53,20 @@ class HasTokenWalletTest < Minitest::Test
   def test_try_deduct_tokens_returns_false
     assert_equal false, @user.try_deduct_tokens!(100, reason: :nope)
   end
+
+  def test_has_token_wallet_macro
+    macro_user = MacroUser.create!(name: "Macro")
+    macro_user.grant_tokens!(250, reason: :signup)
+    assert_equal 250, macro_user.token_balance
+  end
+
+  def test_ledger_credits_and_debits_read
+    @user.grant_tokens!(1_000, reason: :trial)
+    @user.deduct_tokens!(250, reason: :render)
+
+    assert_equal 1_000, @user.token_transactions.credits.sum(:amount)
+    assert_equal(-250, @user.token_transactions.debits.sum(:amount))
+    assert @user.token_transactions.credits.all?(&:credit?)
+    assert @user.token_transactions.debits.all?(&:debit?)
+  end
 end

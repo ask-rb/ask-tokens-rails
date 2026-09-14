@@ -94,10 +94,14 @@ module Ask
         # Extract well-known metadata keys into their matching model columns.
         # Only writes keys that exist in metadata, so grants/debits without
         # LLM context are unaffected. Symbol and string keys are both handled.
+        # Intersected with the table's actual columns so installs created
+        # before the billing columns existed keep the detail in metadata.
         COLUMN_KEYS = %i[model_id provider input_tokens output_tokens cached_tokens llm_cost_usd multiplier].freeze
 
         def extract_columns_from_metadata(meta)
-          COLUMN_KEYS.each_with_object({}) do |key, hash|
+          keys = COLUMN_KEYS & Ask::Tokens::TokenTransaction.column_names.map(&:to_sym)
+
+          keys.each_with_object({}) do |key, hash|
             value = meta[key] || meta[key.to_s]
             hash[key] = value if value
           end

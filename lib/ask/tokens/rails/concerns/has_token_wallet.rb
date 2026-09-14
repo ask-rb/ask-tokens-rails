@@ -5,6 +5,14 @@ require "active_support/concern"
 module Ask
   module Tokens
     module Rails
+      # Included into ActiveRecord::Base by the railtie, so any model can say
+      # `has_token_wallet` — the macro documented in the README.
+      module TokenWalletOwner
+        def has_token_wallet
+          include Ask::Tokens::Rails::HasTokenWallet
+        end
+      end
+
       # Include this concern in any ActiveRecord model to give it a token
       # wallet backed by ask-tokens-rails.
       #

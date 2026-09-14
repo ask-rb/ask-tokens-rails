@@ -15,9 +15,11 @@ require "ask/tokens/rails/models/token_wallet"
 require "ask/tokens/rails/models/token_transaction"
 require "ask/tokens/rails/stores/active_record_store"
 require "ask/tokens/rails/concerns/has_token_wallet"
+require "ask/tokens/rails/jobs/sweep_expired_tokens_job"
 
 ActiveRecord::Base.establish_connection(adapter: "sqlite3", database: ":memory:")
 ActiveRecord::Base.logger = nil unless ENV["LOG"]
+ActiveRecord::Base.extend(Ask::Tokens::Rails::TokenWalletOwner)
 
 ActiveRecord::Schema.define do
   suppress_messages do
@@ -37,6 +39,13 @@ ActiveRecord::Schema.define do
       t.json :metadata, null: false, default: {}
       t.bigint :balance, null: false
       t.datetime :expires_at
+      t.string :model_id
+      t.string :provider
+      t.bigint :input_tokens
+      t.bigint :output_tokens
+      t.bigint :cached_tokens
+      t.decimal :llm_cost_usd, precision: 12, scale: 8
+      t.decimal :multiplier, precision: 6, scale: 4, default: 1.0, null: false
       t.datetime :created_at, null: false
     end
     add_index :ask_tokens_transactions, %i[token_wallet_id created_at]
@@ -50,6 +59,12 @@ end
 # Stub model to test the concern without a full Rails app
 class TestUser < ActiveRecord::Base
   include Ask::Tokens::Rails::HasTokenWallet
+end
+
+# Stub model to test the `has_token_wallet` macro
+class MacroUser < ActiveRecord::Base
+  self.table_name = "test_users"
+  has_token_wallet
 end
 
 require "minitest/autorun"

@@ -1,3 +1,33 @@
+## [0.4.0] — 2026-09-14
+
+### Added
+
+- **Billing-detail columns on the ledger.** `model_id`, `provider`,
+  `input_tokens`, `output_tokens`, `cached_tokens`, `llm_cost_usd`, and
+  `multiplier` — already lifted out of `metadata` by the ActiveRecord store —
+  are now in the install migration, so ledgers can be summed and grouped
+  (model spend, margin) without JSON casts. The columns are optional: the
+  store intersects the extraction keys with the table's actual columns, so
+  installs created before this release keep the detail in `metadata`.
+  Existing installs can add the columns with the equivalent migration.
+- **`credits` scope and `debit?`/`credit?` predicates** on the ledger model,
+  matching the `debits`/`grants` scopes.
+- **`has_token_wallet` macro.** Including `Ask::Tokens::Rails::HasTokenWallet`
+  still works; the railtie also makes the documented `has_token_wallet` macro
+  available on every model.
+- **`expires_at` index** on the transactions table, for the sweep job.
+
+### Fixed
+
+- **`SweepExpiredTokensJob` never loaded and had a broken query.** The job is
+  now required by the railtie, and its grant lookup no longer hardcodes the
+  legacy `token_transactions` table or a nonexistent `source_transaction_id`
+  column (the source grant lives in `metadata`).
+- **Expiry no longer eats a later top-up.** The sweep replays the wallet's
+  ledger first-to-expire-first and removes only each expired grant's unspent
+  remainder, instead of capping at whatever the wallet balance happens to be.
+  Repeated runs are idempotent.
+
 ## [0.3.0] — 2026-09-14
 
 ### Changed

@@ -18,9 +18,20 @@ class CreateAskTokensTables < ActiveRecord::Migration[7.0]
       t.jsonb :metadata, null: false, default: {}
       t.bigint :balance, null: false
       t.datetime :expires_at
+      # Billing detail the ActiveRecord store lifts out of :metadata when
+      # present. Columns exist so ledgers can be summed and grouped (model
+      # spend, margin) without JSON casts.
+      t.string :model_id
+      t.string :provider
+      t.bigint :input_tokens
+      t.bigint :output_tokens
+      t.bigint :cached_tokens
+      t.decimal :llm_cost_usd, precision: 12, scale: 8
+      t.decimal :multiplier, precision: 6, scale: 4, default: 1.0, null: false
       t.datetime :created_at, null: false
     end
     add_index :<%= Ask::Tokens::Rails.config.transactions_table %>, %i[token_wallet_id created_at]
     add_index :<%= Ask::Tokens::Rails.config.transactions_table %>, :entry_type
+    add_index :<%= Ask::Tokens::Rails.config.transactions_table %>, :expires_at
   end
 end

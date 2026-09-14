@@ -77,6 +77,37 @@ class ActiveRecordStoreTest < Minitest::Test
     assert_equal({ "campaign" => "beta" }, txn.metadata)
   end
 
+  def test_billing_detail_lifted_into_columns
+    wallet.grant!(100, reason: :top_up)
+    wallet.deduct!(25, reason: :llm_call, metadata: {
+      model_id: "deepseek/deepseek-v4.1-flash",
+      provider: "commandcode",
+      input_tokens: 1_000,
+      output_tokens: 250,
+      cached_tokens: 400,
+      llm_cost_usd: 0.00035,
+      multiplier: 2.0
+    })
+
+    txn = Ask::Tokens::TokenTransaction.last
+    assert_equal "deepseek/deepseek-v4.1-flash", txn.model_id
+    assert_equal "commandcode", txn.provider
+    assert_equal 1_000, txn.input_tokens
+    assert_equal 250, txn.output_tokens
+    assert_equal 400, txn.cached_tokens
+    assert_in_delta 0.00035, txn.llm_cost_usd, 1e-9
+    assert_in_delta 2.0, txn.multiplier, 1e-9
+    # The full detail also stays queryable in metadata.
+    assert_equal 1_000, txn.metadata["input_tokens"]
+  end
+
+  def test_billing_columns_are_optional
+    wallet.grant!(100, reason: :signup)
+    txn = Ask::Tokens::TokenTransaction.last
+    assert_nil txn.model_id
+    assert_equal 1.0, txn.multiplier
+  end
+
   def test_insufficient_tokens_raises
     wallet.grant!(10, reason: :tiny)
     assert_raises(Ask::Tokens::InsufficientTokens) do

@@ -25,8 +25,18 @@ module Ask
       scope :debits, -> { where(entry_type: "debit") }
       scope :adjustments, -> { where(entry_type: "adjustment") }
       scope :expiries, -> { where(entry_type: "expiry") }
+      # Everything that adds tokens to a wallet (grants and adjustments).
+      scope :credits, -> { where(entry_type: %w[grant adjustment]) }
       scope :since, ->(time) { where("created_at >= ?", time) }
       scope :newest_first, -> { order(created_at: :desc) }
+
+      def debit?
+        entry_type == "debit"
+      end
+
+      def credit?
+        %w[grant adjustment].include?(entry_type)
+      end
 
       validate :immutable_after_creation, on: :update
 
