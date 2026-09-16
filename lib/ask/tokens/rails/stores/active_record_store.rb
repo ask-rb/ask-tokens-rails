@@ -96,7 +96,7 @@ module Ask
         # LLM context are unaffected. Symbol and string keys are both handled.
         # Intersected with the table's actual columns so installs created
         # before the billing columns existed keep the detail in metadata.
-        COLUMN_KEYS = %i[model_id provider input_tokens output_tokens cached_tokens llm_cost_usd multiplier].freeze
+        COLUMN_KEYS = %i[model_id provider input_tokens output_tokens cached_tokens llm_cost_usd multiplier cost_kind unit_kind units].freeze
 
         def extract_columns_from_metadata(meta)
           keys = COLUMN_KEYS & Ask::Tokens::TokenTransaction.column_names.map(&:to_sym)
