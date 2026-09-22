@@ -19,7 +19,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
   spec.files = Dir["lib/**/*", "LICENSE", "README.md", "CHANGELOG.md"]
 
-  spec.add_dependency "ask-tokens", ">= 0.2.1"
+  spec.add_dependency "ask-tokens", ">= 0.2.2"
   spec.add_dependency "rails", ">= 7.0"
 
   spec.add_development_dependency "minitest", "~> 5.25"
