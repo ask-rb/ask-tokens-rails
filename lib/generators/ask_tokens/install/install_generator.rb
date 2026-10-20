@@ -16,7 +16,7 @@ module AskTokens
         Time.now.utc.strftime("%Y%m%d%H%M%S")
       end
 
-      def create_migration
+      def create_token_wallets_migration
         migration_template "migration.rb", "db/migrate/create_token_wallets.rb"
       end
 

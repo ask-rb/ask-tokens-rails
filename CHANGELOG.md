@@ -89,3 +89,8 @@
 - `SweepExpiredTokensJob` for expiring past-due grant entries.
 - Automatic store swap via Railtie — no manual wiring required.
 - Standard ask-gem infrastructure: CI, rubocop, overcommit.
+
+## [0.5.3] - 2026-10-20
+
+### Fixed
+- Install generator: renamed `create_migration` action to `create_token_wallets_migration` to avoid shadowing `Rails::Generators::Migration#create_migration` (Rails 8.1+), which caused `wrong number of arguments (given 3, expected 0)`.
